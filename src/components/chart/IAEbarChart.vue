@@ -49,10 +49,10 @@
   function createdChart() {
     // 定义margin，确定与上下边的距离
     const margin = { top: 30, left: 60, bottom: 20 };
-    const width = 565;
+    const width = 1000;
     const height = 450;
     // 定义柱状图宽度
-    const barWeight = 480;
+    const barWeight = 900;
     const preIAE = props.nationalData.map((item) => {
       return {
         year: item.年,
@@ -105,6 +105,7 @@
       .attr('class', 'x-axis')
       .attr('transform', `translate(0, ${height - margin.top - margin.bottom})`)
       .call(xAxis)
+      .attr('font-size', '14px')
       .append('text')
       .attr('class', 'x-axis-unit')
       .attr('x', barWeight + 5) // 放置在轴的末端
@@ -115,6 +116,7 @@
     g.append('g')
       .attr('class', 'y-axis')
       .call(yAxis)
+      .attr('font-size', '14px')
       .append('text')
       .attr('class', 'x-axis-unit')
       .attr('x', -5) // 放置在轴的末端
@@ -123,9 +125,6 @@
       .attr('font-size', '12px')
       .text('金额/元')
       .selectAll('text'); // 选择所有刻度文本
-    // 设置 X 轴和 Y 轴的刻度字体样式
-    g.selectAll('.x-axis text').style('font-size', '12px'); // 设置 X 轴刻度字体大小
-    g.selectAll('.y-axis text').style('font-size', '12px'); // 设置 Y 轴刻度字体大小
     // 创建柱状图
     g.selectAll()
       .data(preIAE)

@@ -58,7 +58,7 @@
     const margin = { top: 30, left: 60, bottom: 20 };
     const width = 565;
     const height = 450;
-    const radius = Math.min(width, height) / 2;
+    const radius = Math.min(width, height) / 2 - 50;
 
     const chart = d3.select('#radarChart');
     const dimensions = ['food', 'clothes', 'reside', 'goods', 'transportation', 'educational', 'healthcare', 'other'];

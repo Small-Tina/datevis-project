@@ -5,6 +5,7 @@
   import UrbanAndRuralPieChart from '@/components/chart/UrbanAndRuralPieChart.vue';
   import RadarChart from '@/components/chart/RadarChart.vue';
   import LineChart from '@/components/chart/LineChart.vue';
+  import WordCloud from '@/components/chart/WordCloud.vue';
 
   let nationalData = ref([]);
   let cityData = ref([]);
@@ -55,29 +56,36 @@
 
 <template>
   <div class="h-screen w-screen">
-    <div class="flex flex-row h-full">
-      <div class="basis-2/7 flex flex-col">
+    <div class="flex flex-col h-full">
+      <div class="basis-1/2 flex flex-row">
         <div class="basis-1/2"><IAEbarChart :nationalData="nationalData" /></div>
         <div class="basis-1/2">
+          <div class="basis-1/2">
+            <LineChart :nationalData="nationalData" />
+          </div>
+        </div>
+      </div>
+      <div class="basis-1/2 flex flex-row">
+        <div class="basis-1/3">
           <UrbanAndRuralPieChart
             :cityData="cityData"
             :villageData="villageData"
             :selectYear="selectYear"
           />
         </div>
-      </div>
-      <div class="basis-3/7"></div>
-      <div class="basis-2/7 flex flex-col">
-        <div class="basis-1/2">
-          <LineChart :nationalData="nationalData" />
-        </div>
-        <div class="basis-1/2">
+        <div class="basis-1/3">
           <RadarChart
             :nationalData="nationalData"
             :cityData="cityData"
             :villageData="villageData"
             :selectYear="selectYear"
           />
+        </div>
+        <div
+          class="basis-1/3"
+          v-if="nationalData.length > 0"
+        >
+          <WordCloud :nationalData="nationalData" />
         </div>
       </div>
     </div>

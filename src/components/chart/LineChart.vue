@@ -49,9 +49,10 @@
   function createdChart() {
     // 定义margin，确定与上下边的距离
     const margin = { top: 30, left: 60, bottom: 20 };
-    const width = 565;
+    const width = 1000;
     const height = 450;
-    const barWeight = 480;
+    // 定义柱状图宽度
+    const barWeight = 900;
     const data = props.nationalData.map((item) => ({
       year: item.年,
       food: item.食品烟酒,
@@ -105,6 +106,7 @@
     g.append('g')
       .attr('class', 'y-axis')
       .call(yAxis)
+      .attr('font-size', '14px')
       .append('text')
       .attr('class', 'x-axis-unit')
       .attr('x', -5) // 放置在轴的末端
