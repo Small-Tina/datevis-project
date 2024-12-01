@@ -101,7 +101,7 @@
       .attr('x', width / 2)
       .attr('y', margin.top / 2)
       .attr('text-anchor', 'middle')
-      .attr('font-size', '16px')
+      .attr('font-size', '18px')
       .attr('font-weight', 'bold')
       .text('城乡收支对比');
   }

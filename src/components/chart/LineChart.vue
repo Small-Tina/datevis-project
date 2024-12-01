@@ -72,7 +72,7 @@
         return Math.max(...Object.values(item));
       })
     );
-    const year = data.map((item) => item.年);
+    const year = data.map((item) => item.year);
 
     // 获取div的宽高
     const lineChart = d3.select('#lineChart');
@@ -80,9 +80,9 @@
     const svg = lineChart.select('svg').empty() ? lineChart.append('svg').attr('width', width).attr('height', height) : lineChart.select('svg');
     // 创建标题
     creatTitle(svg, width, margin);
-    updateChart(svg, margin, height, barWeight, maxValue, year);
+    updateChart(svg, margin, height, barWeight, maxValue, year, data);
   }
-  function updateChart(svg, margin, height, barWeight, maxValue, year) {
+  function updateChart(svg, margin, height, barWeight, maxValue, year, data) {
     // 创建一个g元素，用于容纳所有的图形元素
     const g = svg.append('g').attr('transform', `translate(${margin.left}, ${margin.top})`);
     // 定义x轴和y轴
@@ -113,8 +113,38 @@
       .attr('y', 16) // 调整单位文本与轴线的间距
       .attr('fill', 'black') // 单位颜色
       .attr('font-size', '12px')
-      .text('金额/元')
-      .selectAll('text'); // 选择所有刻度文本
+      .text('金额/元');
+
+    const categories = ['food', 'clothes', 'reside', 'goods', 'transportation', 'educational', 'healthcare', 'other'];
+    // 定义颜色比例尺，根据类别返回不同的颜色
+    const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+    categories.forEach((category) => {
+      // 定义线条生成器
+      const lineGenerator = d3
+        .line()
+        .x((d) => xScale(d.year) + xScale.bandwidth() / 2) // 确保点位于柱状图中间
+        .y((d) => yScale(d[category]));
+
+      // 创建折线路径
+      g.append('path')
+        .datum(data) // 将数据绑定到路径
+        .attr('class', `line ${category}`) // 为每个类别的线添加不同的样式类
+        .attr('fill', 'none')
+        .attr('stroke', colorScale(category)) // 使用颜色比例尺来给不同类别分配颜色
+        .attr('stroke-width', 2)
+        .attr('d', lineGenerator); // 使用线条生成器定义路径
+
+      // 可选：添加点以突出显示数据点
+      g.selectAll(`.${category}-dot`)
+        .data(data)
+        .enter()
+        .append('circle')
+        .attr('class', `${category}-dot`)
+        .attr('cx', (d) => xScale(d.year) + xScale.bandwidth() / 2)
+        .attr('cy', (d) => yScale(d[category]))
+        .attr('r', 4)
+        .style('fill', colorScale(category));
+    });
   }
   function creatTitle(svg, width, margin) {
     // 添加标题
