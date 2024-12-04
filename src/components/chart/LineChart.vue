@@ -16,6 +16,9 @@
   });
   /**
    * 接收来自父组件的数据
+   * @param {*} props
+   * @param {*} emit
+   * @returns
    */
   const props = defineProps({
     nationalData: {
