@@ -37,8 +37,9 @@
     });
     /**
      *
-     * @param {Array} dataArray
      * 批量获取数据，并赋值给对应的data
+     * @param {Array} dataArray
+     * @param {Array} dataUrl
      */
     Promise.all(fetchPromises)
       .then(() => {
@@ -67,7 +68,10 @@
       </div>
       <div class="basis-1/2 flex flex-row">
         <div class="basis-1/3">
-          <StackedAreaChart :nationalData="nationalData" />
+          <StackedAreaChart
+            v-if="nationalData.length > 0"
+            :nationalData="nationalData"
+          />
         </div>
         <div class="basis-1/3">
           <RadarChart
