@@ -5,7 +5,7 @@
   import UrbanAndRuralPieChart from '@/components/chart/UrbanAndRuralPieChart.vue';
   import RadarChart from '@/components/chart/RadarChart.vue';
   import LineChart from '@/components/chart/LineChart.vue';
-  import WordCloud from '@/components/chart/WordCloud.vue';
+  import StackedAreaChart from '@/components/chart/StackedAreaChart.vue';
 
   let nationalData = ref([]);
   let cityData = ref([]);
@@ -67,11 +67,7 @@
       </div>
       <div class="basis-1/2 flex flex-row">
         <div class="basis-1/3">
-          <UrbanAndRuralPieChart
-            :cityData="cityData"
-            :villageData="villageData"
-            :selectYear="selectYear"
-          />
+          <StackedAreaChart :nationalData="nationalData" />
         </div>
         <div class="basis-1/3">
           <RadarChart
@@ -85,7 +81,11 @@
           class="basis-1/3"
           v-if="nationalData.length > 0"
         >
-          <WordCloud :nationalData="nationalData" />
+          <UrbanAndRuralPieChart
+            :cityData="cityData"
+            :villageData="villageData"
+            :selectYear="selectYear"
+          />
         </div>
       </div>
     </div>

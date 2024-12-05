@@ -1,6 +1,6 @@
 <template>
   <div
-    id="wordCloud"
+    id="StackedAreaChart"
     class="h-full"
   ></div>
 </template>
@@ -12,7 +12,7 @@
    * 配置组件
    */
   defineOptions({
-    name: 'WordCloud',
+    name: 'StackedAreaChart',
   });
   /**
    * 接收来自父组件的数据
@@ -41,7 +41,12 @@
   onMounted(() => {
     createdChart();
   });
-  function createdChart() {}
+  function createdChart() {
+    // 定义margin，确定与上下边的距离
+    const margin = { top: 30, left: 60, bottom: 20 };
+    const width = 1000;
+    const height = 450;
+  }
 </script>
 
 <style></style>
