@@ -57,12 +57,23 @@
 
 <template>
   <div class="h-screen w-screen">
-    <div class="flex flex-col h-full">
-      <div class="basis-1/2 flex flex-row">
-        <div class="basis-1/2"><IAEbarChart :nationalData="nationalData" /></div>
+    <div class="flex items-center justify-center">
+      <span class="text-4xl">近年我国国民收支情况</span>
+    </div>
+    <div class="flex flex-col">
+      <div class="basis-1/2 flex flex-row mb-5">
+        <div class="basis-1/2">
+          <IAEbarChart
+            v-if="nationalData.length > 0"
+            :nationalData="nationalData"
+          />
+        </div>
         <div class="basis-1/2">
           <div class="basis-1/2">
-            <LineChart :nationalData="nationalData" />
+            <LineChart
+              v-if="nationalData.length > 0"
+              :nationalData="nationalData"
+            />
           </div>
         </div>
       </div>
@@ -75,6 +86,7 @@
         </div>
         <div class="basis-1/3">
           <RadarChart
+            v-if="nationalData.length > 0 && cityData.length > 0 && villageData.length > 0"
             :nationalData="nationalData"
             :cityData="cityData"
             :villageData="villageData"
@@ -86,6 +98,7 @@
           v-if="nationalData.length > 0"
         >
           <UrbanAndRuralPieChart
+            v-if="nationalData.length > 0 && cityData.length > 0 && villageData.length > 0"
             :cityData="cityData"
             :villageData="villageData"
             :selectYear="selectYear"

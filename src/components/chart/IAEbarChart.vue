@@ -50,7 +50,7 @@
     // 定义margin，确定与上下边的距离
     const margin = { top: 30, left: 60, bottom: 20 };
     const width = 1000;
-    const height = 450;
+    const height = 430;
     // 定义柱状图宽度
     const barWeight = 900;
     const preIAE = props.nationalData.map((item) => {
@@ -94,7 +94,7 @@
     const g = svg.append('g').attr('transform', `translate(${margin.left}, ${margin.top})`);
     // 定义x轴和y轴
     const xScale = d3.scaleBand().domain(year).range([0, barWeight]).padding(0.05);
-    const yScale = d3.scaleLinear().domain([0, maxValue]).range([400, 0]);
+    const yScale = d3.scaleLinear().domain([0, maxValue]).range([380, 0]);
     // 创建一个子band，用于在每个柱状图上绘制多个条
     const subXScale = d3.scaleBand().domain(categories).range([0, xScale.bandwidth()]).padding(0.1);
     // 创建坐标轴

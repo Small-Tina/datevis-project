@@ -59,7 +59,7 @@
     const data = [cityData, villageData];
     const margin = { top: 30, left: 60, bottom: 20 };
     const width = 565;
-    const height = 450;
+    const height = 430;
     const radius = Math.min(width, height) / 2 - 50;
     // 获取div的宽高
     const uarDiv = d3.select('#UARdiv');

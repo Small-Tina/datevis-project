@@ -57,48 +57,43 @@
   function createdChart() {
     const margin = { top: 30, left: 60, bottom: 20 };
     const width = 565;
-    const height = 450;
+    const height = 430;
     const radius = Math.min(width, height) / 2 - 50;
 
     const chart = d3.select('#radarChart');
-    const dimensions = ['food', 'clothes', 'reside', 'goods', 'transportation', 'educational', 'healthcare', 'other'];
+    const dimensions = ['工资性收入', '经营净收入', '财产净收入', '转移净收入'];
     const angleSlice = (Math.PI * 2) / dimensions.length;
 
     const nationalData = dataProcess(props.nationalData);
     const cityData = dataProcess(props.cityData);
     const villageData = dataProcess(props.villageData);
-    // 如果有任意数据无效则退出
-    if (!nationalData || !cityData || !villageData) {
-      return;
-    }
+
     // 获取数据的最大值
-    const maxValue = Math.max(...Object.values(nationalData));
+    const allData = [nationalData, cityData, villageData];
+    const maxValue = Math.max(...allData.map((d) => Math.max(...Object.values(d))));
 
     // 创建或更新 SVG
     const svg = chart.select('svg').empty() ? chart.append('svg').attr('width', width).attr('height', height) : chart.select('svg');
 
-    updateChart(svg, radius, dimensions, angleSlice, nationalData, margin, maxValue, width, height);
+    updateChart(svg, radius, dimensions, angleSlice, nationalData, cityData, villageData, margin, maxValue, width, height);
     creatTitle(svg, width, margin);
   }
   function dataProcess(data) {
     // 转换数据
     const processData = data.map((item) => ({
-      year: item.年,
-      food: item.食品烟酒,
-      clothes: item.衣着,
-      reside: item.居住,
-      goods: item.生活用品及服务,
-      transportation: item.交通通信,
-      educational: item.教育文化娱乐,
-      healthcare: item.医疗保健,
-      other: item.其他用品及服务,
+      年: item.年,
+      工资性收入: item.工资性收入,
+      经营净收入: item.经营净收入,
+      财产净收入: item.财产净收入,
+      转移净收入: item.转移净收入,
     }));
+    console.log(processData);
 
     // 获取选择年份的数据
-    const processData_now = processData.find((item) => item.year == props.selectYear);
+    const processData_now = processData.find((item) => item.年 == props.selectYear);
     return processData_now;
   }
-  function updateChart(svg, radius, dimensions, angleSlice, nationalData, margin, maxValue, width, height) {
+  function updateChart(svg, radius, dimensions, angleSlice, nationalData, cityData, villageData, margin, maxValue, width, height) {
     // 创建 g 元素并移动到合适的位置
     const g = svg.append('g').attr('transform', `translate(${width / 2}, ${height / 2 + margin.top / 2})`);
     // 绘制网格线（圆圈）
@@ -124,30 +119,66 @@
       .attr('class', 'line')
       .style('stroke', '#ccc')
       .style('stroke-width', 2);
+    // 添加轴标签
+    axis
+      .append('text')
+      .attr('transform', (d, i) => `translate(${radius * 1.1 * Math.cos(angleSlice * i - Math.PI / 2)}, ${radius * 1.1 * Math.sin(angleSlice * i - Math.PI / 2)})`)
+      .attr('text-anchor', (d, i) => (i % 2 === 0 ? 'start' : 'end'))
+      .attr('dy', '.35em')
+      .text((d) => d);
+    function drawDataSet(g, data, color, label) {
+      // 计算数据的坐标
+      const dataValues = dimensions.map((d, j) => {
+        const x = radius * (data[d] / maxValue) * Math.cos(angleSlice * j - Math.PI / 2);
+        const y = radius * (data[d] / maxValue) * Math.sin(angleSlice * j - Math.PI / 2);
+        return [x, y];
+      });
+      dataValues.push(dataValues[0]); // 连接到起始点
 
-    // 计算数据的坐标并绘制雷达图区域
-    const dataValues = dimensions.map((d, j) => {
-      const x = radius * (nationalData[d] / maxValue) * Math.cos(angleSlice * j - Math.PI / 2);
-      const y = radius * (nationalData[d] / maxValue) * Math.sin(angleSlice * j - Math.PI / 2);
-      return [x, y];
-    });
-    dataValues.push(dataValues[0]); // 连接到起始点
+      // 绘制雷达图区域
+      g.append('polygon')
+        .attr('class', 'radar-chart-series')
+        .attr('points', dataValues.map((d) => d.join(',')).join(' '))
+        .style('fill', color)
+        .style('stroke', color)
+        .style('stroke-width', 2)
+        .style('fill-opacity', 0.5);
 
-    g.append('polygon')
-      .attr('class', 'radar-chart-series')
-      .attr('points', dataValues.map((d) => d.join(',')).join(' '))
-      .style('fill', '#ccc')
-      .style('stroke', 'red')
-      .style('stroke-width', 2)
-      .style('fill-opacity', 0.5);
+      // 绘制每个数据点及数据值标签
+      dimensions.forEach((d, j) => {
+        const x = radius * (data[d] / maxValue) * Math.cos(angleSlice * j - Math.PI / 2);
+        const y = radius * (data[d] / maxValue) * Math.sin(angleSlice * j - Math.PI / 2);
 
-    // 绘制每个数据点
-    dimensions.forEach((d, j) => {
-      const x = radius * (nationalData[d] / maxValue) * Math.cos(angleSlice * j - Math.PI / 2);
-      const y = radius * (nationalData[d] / maxValue) * Math.sin(angleSlice * j - Math.PI / 2);
+        g.append('circle').attr('class', 'radar-chart-point').attr('cx', x).attr('cy', y).attr('r', 4).style('fill', color).style('stroke', '#fff').style('stroke-width', 2);
 
-      g.append('circle').attr('class', 'radar-chart-point').attr('cx', x).attr('cy', y).attr('r', 4).style('fill', 'red').style('stroke', '#fff').style('stroke-width', 2);
-    });
+        // 添加数据值标签
+        g.append('text')
+          .attr('x', x)
+          .attr('y', y)
+          .attr('dx', j % 2 === 0 ? 8 : -8) // 调整文本与圆点的距离
+          .attr('dy', '.35em')
+          .attr('text-anchor', j % 2 === 0 ? 'start' : 'end')
+          .text(data[d].toFixed(2)); // 显示数据点的值
+      });
+
+      // 添加图例
+      g.append('rect')
+        .attr('x', -radius - 30)
+        .attr('y', -radius + 30)
+        .attr('width', 10)
+        .attr('height', 10)
+        .style('fill', color);
+
+      g.append('text')
+        .attr('x', -radius - 20)
+        .attr('y', -radius + 40)
+        .attr('text-anchor', 'start')
+        .attr('font-size', '12px')
+        .text(label);
+    }
+    drawDataSet(g, nationalData, '#ccc', '全国');
+    drawDataSet(g, cityData, '#888', '城市');
+    drawDataSet(g, villageData, '#aaa', '农村');
   }
   function creatTitle(svg, width, margin) {
     svg

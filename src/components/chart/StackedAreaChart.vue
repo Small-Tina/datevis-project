@@ -48,7 +48,7 @@
     // 定义 margin
     const margin = { top: 30, left: 60, bottom: 50, right: 20 };
     const width = 600;
-    const height = 400;
+    const height = 430;
 
     // 创建 SVG 容器
     const svg = d3
