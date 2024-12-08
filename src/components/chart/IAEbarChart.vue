@@ -3,6 +3,11 @@
     id="iaeDiv"
     class="h-full mt-2"
   ></div>
+  <div
+    id="tooltip"
+    class="tooltip"
+    style="position: absolute; display: none"
+  ></div>
 </template>
 
 <script setup>
@@ -42,17 +47,22 @@
     createdChart();
   });
 
+  // 在组件的作用域内定义 selectedCategories 状态
+  let selectedCategories = {
+    preDI: true,
+    prePCE: true,
+  };
+  // 定义margin，确定与上下边的距离
+  const margin = { top: 30, left: 60, bottom: 20 };
+  const width = 1000;
+  const height = 430;
+  // 定义柱状图宽度
+  const barWeight = 900;
   /**
    * 创建图表
    * @returns
    */
   function createdChart() {
-    // 定义margin，确定与上下边的距离
-    const margin = { top: 30, left: 60, bottom: 20 };
-    const width = 1000;
-    const height = 430;
-    // 定义柱状图宽度
-    const barWeight = 900;
     const preIAE = props.nationalData.map((item) => {
       return {
         year: item.年,
@@ -84,67 +94,73 @@
     // 创建标题
     creatTitle(svg, width, margin);
     // 创建图例
-    createLegend(svg, categories, colorMap, margin.left + 10, 30);
+    createLegend(svg, categories, colorMap, year, maxValue, preIAE);
     // 更新图表
-    updateChart(svg, margin, height, barWeight, year, maxValue, categories, preIAE, colorMap);
+    updateChart(svg, year, maxValue, categories, preIAE, colorMap);
   }
 
-  function updateChart(svg, margin, height, barWeight, year, maxValue, categories, preIAE, colorMap) {
-    // 创建一个g元素，用于容纳所有的图形元素
+  function updateChart(svg, year, maxValue, categories, preIAE, colorMap) {
     const g = svg.append('g').attr('transform', `translate(${margin.left}, ${margin.top})`);
-    // 定义x轴和y轴
     const xScale = d3.scaleBand().domain(year).range([0, barWeight]).padding(0.05);
     const yScale = d3.scaleLinear().domain([0, maxValue]).range([380, 0]);
-    // 创建一个子band，用于在每个柱状图上绘制多个条
     const subXScale = d3.scaleBand().domain(categories).range([0, xScale.bandwidth()]).padding(0.1);
-    // 创建坐标轴
+
     const xAxis = d3.axisBottom(xScale).tickSize(0).tickPadding(10);
     const yAxis = d3.axisLeft(yScale).tickSize(0);
-    // 添加坐标轴
+
     g.append('g')
       .attr('class', 'x-axis')
       .attr('transform', `translate(0, ${height - margin.top - margin.bottom})`)
       .call(xAxis)
-      .attr('font-size', '14px')
-      .append('text')
-      .attr('class', 'x-axis-unit')
-      .attr('x', barWeight + 5) // 放置在轴的末端
-      .attr('y', 18) // 调整单位文本与轴线的间距
-      .attr('fill', 'black') // 单位颜色
-      .attr('font-size', '12px')
-      .text('时间/年');
-    g.append('g')
-      .attr('class', 'y-axis')
-      .call(yAxis)
-      .attr('font-size', '14px')
-      .append('text')
-      .attr('class', 'x-axis-unit')
-      .attr('x', -5) // 放置在轴的末端
-      .attr('y', 16) // 调整单位文本与轴线的间距
-      .attr('fill', 'black') // 单位颜色
-      .attr('font-size', '12px')
-      .text('金额/元')
-      .selectAll('text'); // 选择所有刻度文本
-    // 创建柱状图
-    g.selectAll()
+      .attr('font-size', '14px');
+
+    g.append('g').attr('class', 'y-axis').call(yAxis).attr('font-size', '14px');
+
+    const barGroups = g
+      .selectAll()
       .data(preIAE)
       .join('g')
-      .attr('transform', (d) => `translate(${xScale(d.year)}, 0)`) // 按年份定位
+      .attr('transform', (d) => `translate(${xScale(d.year)}, 0)`);
+
+    barGroups
       .selectAll('rect')
       .data((d) =>
-        categories.map((category) => ({
-          category,
-          value: d[category], // 根据类别取值
-        }))
-      ) // 为每个类别创建数据
+        categories
+          .map((category) => ({
+            category,
+            value: d[category],
+            selected: selectedCategories[category],
+          }))
+          .filter((d) => d.selected)
+      )
       .join('rect')
+      .attr('class', (d) => `bar ${d.category}`) // 给每个柱子添加类别类名
       .attr('x', (d) => subXScale(d.category))
       .attr('y', (d) => yScale(d.value))
       .attr('width', subXScale.bandwidth())
       .attr('height', (d) => yScale(0) - yScale(d.value))
       .attr('fill', (d) => colorMap.find((item) => item.value === d.category)?.color)
-      .on('dbclick', function (d) {
-        console.log(d);
+      .on('mouseover', function (event, d) {
+        // 高亮当前柱子
+        d3.select(this)
+          .transition()
+          .duration(200)
+          .attr('fill', d3.color(d3.select(this).attr('fill')).brighter(1)); // 提高亮度
+        // 显示提示信息
+        d3.select('#tooltip')
+          .style('display', 'block')
+          .style('left', `${event.pageX + 10}px`)
+          .style('top', `${event.pageY - 10}px`)
+          .text(`${d.category}: ${d.value}`);
+      })
+      .on('mouseout', function () {
+        // 恢复柱子原始颜色
+        d3.select(this)
+          .transition()
+          .duration(200)
+          .attr('fill', (d) => colorMap.find((item) => item.value === d.category)?.color);
+        // 隐藏提示信息
+        d3.select('#tooltip').style('display', 'none');
       });
   }
   /**
@@ -156,26 +172,51 @@
    * @param {Number} y
    * @returns
    */
-  function createLegend(svg, categories, colorMap, x, y) {
-    const legend = svg.append('g').attr('transform', `translate(${x}, ${y})`);
+  function createLegend(svg, categories, colorMap, year, maxValue, preIAE) {
+    const legend = svg.append('g').attr('transform', `translate(${margin.left + 10}, ${30})`);
+
     categories.forEach((category, i) => {
-      const legendRow = legend.append('g').attr('transform', `translate(0, ${i * 20})`);
+      const legendRow = legend
+        .append('g')
+        .attr('transform', `translate(0, ${i * 30})`) // 调整每行之间的间距
+        .style('cursor', 'pointer') // 鼠标变为手型，提示可交互
+        .on('click', function () {
+          // 切换当前类别的选中状态
+          selectedCategories[category] = !selectedCategories[category];
+          // 更新图表以反映新的选择
+          updateChart(svg, year, maxValue, categories, preIAE, colorMap);
+        })
+        .on('mouseover', function () {
+          // 高亮当前类别的柱状图
+          svg.selectAll('.bar').style('opacity', 0.3); // 使所有柱子变透明
+          svg.selectAll(`.bar.${category}`).style('opacity', 1); // 高亮当前类别
+        })
+        .on('mouseout', function () {
+          // 恢复所有柱状图的透明度
+          svg.selectAll('.bar').style('opacity', 1);
+        });
+
+      // 放大图例矩形
       legendRow
         .append('rect')
-        .attr('width', 10)
-        .attr('height', 10)
-        .attr('fill', colorMap.find((item) => item.value === category)?.color);
+        .attr('width', 20) // 矩形宽度
+        .attr('height', 20) // 矩形高度
+        .attr('fill', colorMap.find((item) => item.value === category)?.color)
+        .classed('selected', selectedCategories[category]); // 根据状态设置样式
+
+      // 放大图例文字
       legendRow
         .append('text')
-        .attr('x', 15)
-        .attr('y', 10)
+        .attr('x', 20) // 文字与矩形之间的间距
+        .attr('y', 12) // 垂直居中
         .attr('text-anchor', 'start')
-        .style('font-size', '12px')
+        .style('font-size', '14px') // 增大文字大小
+        .style('fill', '#333') // 设置文字颜色
         .text(colorMap.find((item) => item.value === category)?.name);
     });
   }
   /**
-   * 创建图例
+   * 创建标题
    * @param {SVGAElement} svg
    * @param {Number} width
    * @param {Object} margin

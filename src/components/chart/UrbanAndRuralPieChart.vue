@@ -56,7 +56,16 @@
   function createdChart() {
     const cityData = props.cityData.find((item) => item.年 == props.selectYear)?.人均可支配收入;
     const villageData = props.villageData.find((item) => item.年 == props.selectYear)?.人均可支配收入;
-    const data = [cityData, villageData];
+    const data = [
+      {
+        name: '城市',
+        data: cityData,
+      },
+      {
+        name: '农村',
+        data: villageData,
+      },
+    ];
     const margin = { top: 30, left: 60, bottom: 20 };
     const width = 565;
     const height = 430;
@@ -64,7 +73,12 @@
     // 获取div的宽高
     const uarDiv = d3.select('#UARdiv');
     // 检查并获取现有的 SVG 元素，如果没有则创建新的
-    const svg = uarDiv.select('svg').empty() ? uarDiv.append('svg').attr('width', width).attr('height', height) : uarDiv.select('svg');
+    const svg = uarDiv.select('svg').empty()
+      ? uarDiv
+          .append('svg')
+          .attr('width', width + margin.left)
+          .attr('height', height)
+      : uarDiv.select('svg');
     creatTitle(svg, width, margin);
     updateChart(svg, radius, width, height, margin, data);
   }
@@ -86,13 +100,28 @@
     // 创建一个g元素，用于容纳所有的图形元素
     const g = svg.append('g').attr('transform', `translate(${width / 2}, ${height / 2 + margin.top / 2})`);
     // 绘制饼图
-    const arcs = g.selectAll('.slice').data(pie(data)).enter().append('g').attr('class', 'slice');
+    const arcs = g
+      .selectAll('.slice')
+      .data(pie(data.map((item) => item.data)))
+      .enter()
+      .append('g')
+      .attr('class', 'slice');
     // 绘制饼图的弧路径
     arcs
       .append('path')
       .attr('d', arc)
       .attr('class', 'slice')
       .style('fill', (d, i) => d3.schemeCategory10[i]);
+    // 添加文本标签
+    arcs
+      .append('text')
+      .attr('transform', (d) => `translate(${arc.centroid(d)})`)
+      .attr('dy', '.35em') // 调整文本垂直位置
+      .attr('text-anchor', 'middle') // 文本居中对齐
+      .text((d, i) => `城市: ${d.value.toFixed(2)} (${(((d.endAngle - d.startAngle) / (2 * Math.PI)) * 100).toFixed(1)}%)`);
+
+    // 如果需要，可以为文本添加额外样式
+    arcs.select('text').style('font-size', '12px').style('fill', 'white'); // 根据背景颜色调整文本颜色
   }
   function creatTitle(svg, width, margin) {
     // 添加标题

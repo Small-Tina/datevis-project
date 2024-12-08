@@ -73,7 +73,12 @@
     const maxValue = Math.max(...allData.map((d) => Math.max(...Object.values(d))));
 
     // 创建或更新 SVG
-    const svg = chart.select('svg').empty() ? chart.append('svg').attr('width', width).attr('height', height) : chart.select('svg');
+    const svg = chart.select('svg').empty()
+      ? chart
+          .append('svg')
+          .attr('width', width + margin.left)
+          .attr('height', height)
+      : chart.select('svg');
 
     updateChart(svg, radius, dimensions, angleSlice, nationalData, cityData, villageData, margin, maxValue, width, height);
     creatTitle(svg, width, margin);
@@ -176,9 +181,9 @@
         .attr('font-size', '12px')
         .text(label);
     }
-    drawDataSet(g, nationalData, '#ccc', '全国');
-    drawDataSet(g, cityData, '#888', '城市');
-    drawDataSet(g, villageData, '#aaa', '农村');
+    drawDataSet(g, nationalData, '#3498db', '全国');
+    drawDataSet(g, cityData, '#e74c3c', '城市');
+    drawDataSet(g, villageData, '#2ecc71', '农村');
   }
   function creatTitle(svg, width, margin) {
     svg

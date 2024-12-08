@@ -41,14 +41,13 @@
   onMounted(() => {
     createdChart();
   });
+  // 定义 margin
+  const margin = { top: 30, left: 60, bottom: 50, right: 20 };
+  const width = 600;
+  const height = 430;
   function createdChart() {
     // 清空容器
     d3.select('#StackedAreaChart').selectAll('*').remove();
-
-    // 定义 margin
-    const margin = { top: 30, left: 60, bottom: 50, right: 20 };
-    const width = 600;
-    const height = 430;
 
     // 创建 SVG 容器
     const svg = d3
@@ -111,9 +110,9 @@
 
     // 添加 Y 轴
     g.append('g').call(d3.axisLeft(y));
-    creatTitle(svg, width, margin);
+    creatTitle(svg);
   }
-  function creatTitle(svg, width, margin) {
+  function creatTitle(svg) {
     // 添加标题
     svg
       .append('text')
