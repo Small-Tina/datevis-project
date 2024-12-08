@@ -156,6 +156,6 @@
       .attr('text-anchor', 'middle')
       .attr('font-size', '18px')
       .attr('font-weight', 'bold')
-      .text('城乡收支对比');
+      .text('城乡收入对比');
   }
 </script>
