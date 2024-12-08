@@ -54,12 +54,11 @@
     createdChart();
   });
 
+  const margin = { top: 30, left: 80, bottom: 20 };
+  const width = 565;
+  const height = 500;
+  const radius = Math.min(width, height) / 2 - 50;
   function createdChart() {
-    const margin = { top: 30, left: 60, bottom: 20 };
-    const width = 565;
-    const height = 430;
-    const radius = Math.min(width, height) / 2 - 50;
-
     const chart = d3.select('#radarChart');
     const dimensions = ['工资性收入', '经营净收入', '财产净收入', '转移净收入'];
     const angleSlice = (Math.PI * 2) / dimensions.length;
@@ -80,8 +79,8 @@
           .attr('height', height)
       : chart.select('svg');
 
-    updateChart(svg, radius, dimensions, angleSlice, nationalData, cityData, villageData, margin, maxValue, width, height);
-    creatTitle(svg, width, margin);
+    updateChart(svg, dimensions, angleSlice, nationalData, cityData, villageData, maxValue);
+    creatTitle(svg);
   }
   function dataProcess(data) {
     // 转换数据
@@ -98,9 +97,9 @@
     const processData_now = processData.find((item) => item.年 == props.selectYear);
     return processData_now;
   }
-  function updateChart(svg, radius, dimensions, angleSlice, nationalData, cityData, villageData, margin, maxValue, width, height) {
+  function updateChart(svg, dimensions, angleSlice, nationalData, cityData, villageData, maxValue) {
     // 创建 g 元素并移动到合适的位置
-    const g = svg.append('g').attr('transform', `translate(${width / 2}, ${height / 2 + margin.top / 2})`);
+    const g = svg.append('g').attr('transform', `translate(${width / 2 + margin.left / 2}, ${height / 2 + margin.top / 2})`);
     // 绘制网格线（圆圈）
     g.selectAll('.gridCircle')
       .data(d3.range(1, 6)) // 可调整圈数
@@ -155,45 +154,39 @@
         const y = radius * (data[d] / maxValue) * Math.sin(angleSlice * j - Math.PI / 2);
 
         g.append('circle').attr('class', 'radar-chart-point').attr('cx', x).attr('cy', y).attr('r', 4).style('fill', color).style('stroke', '#fff').style('stroke-width', 2);
-
-        // 添加数据值标签
-        g.append('text')
-          .attr('x', x)
-          .attr('y', y)
-          .attr('dx', j % 2 === 0 ? 8 : -8) // 调整文本与圆点的距离
-          .attr('dy', '.35em')
-          .attr('text-anchor', j % 2 === 0 ? 'start' : 'end')
-          .text(data[d].toFixed(2)); // 显示数据点的值
       });
-
-      // 添加图例
-      g.append('rect')
-        .attr('x', -radius - 30)
-        .attr('y', -radius + 30)
-        .attr('width', 10)
-        .attr('height', 10)
-        .style('fill', color);
-
-      g.append('text')
-        .attr('x', -radius - 20)
-        .attr('y', -radius + 40)
-        .attr('text-anchor', 'start')
-        .attr('font-size', '12px')
-        .text(label);
     }
     drawDataSet(g, nationalData, '#3498db', '全国');
     drawDataSet(g, cityData, '#e74c3c', '城市');
     drawDataSet(g, villageData, '#2ecc71', '农村');
+    createLegend(svg);
   }
-  function creatTitle(svg, width, margin) {
+  function creatTitle(svg) {
     svg
       .append('text')
-      .attr('x', width / 2)
+      .attr('x', width / 2 + margin.left / 2)
       .attr('y', margin.top / 2)
       .attr('text-anchor', 'middle')
       .attr('font-size', '18px')
       .attr('font-weight', 'bold')
       .text(`城乡${props.selectYear}收入来源`);
+  }
+  function createLegend(svg) {
+    const legendData = [
+      { label: '全国', color: '#3498db' },
+      { label: '城市', color: '#e74c3c' },
+      { label: '农村', color: '#2ecc71' },
+    ];
+
+    const legend = svg.append('g').attr('transform', `translate(${margin.left}, ${margin.top})`);
+
+    legendData.forEach((d, i) => {
+      const legendItem = legend.append('g').attr('transform', `translate(0, ${i * 20})`);
+
+      legendItem.append('rect').attr('width', 15).attr('height', 15).style('fill', d.color);
+
+      legendItem.append('text').attr('x', 20).attr('y', 12).attr('text-anchor', 'start').text(d.label).style('font-size', '12px');
+    });
   }
 </script>
 

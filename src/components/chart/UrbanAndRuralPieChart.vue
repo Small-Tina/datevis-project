@@ -68,7 +68,7 @@
     ];
     const margin = { top: 30, left: 60, bottom: 20 };
     const width = 565;
-    const height = 430;
+    const height = 500;
     const radius = Math.min(width, height) / 2 - 50;
     // 获取div的宽高
     const uarDiv = d3.select('#UARdiv');
@@ -97,8 +97,14 @@
 
     // 创建弧路径生成器
     const arc = d3.arc().innerRadius(0).outerRadius(radius);
+    const arcHover = d3
+      .arc()
+      .innerRadius(0)
+      .outerRadius(radius * 1.1); // 放大效果
+
     // 创建一个g元素，用于容纳所有的图形元素
-    const g = svg.append('g').attr('transform', `translate(${width / 2}, ${height / 2 + margin.top / 2})`);
+    const g = svg.append('g').attr('transform', `translate(${width / 2 + margin.left / 2}, ${height / 2 + margin.top / 2})`);
+
     // 绘制饼图
     const arcs = g
       .selectAll('.slice')
@@ -106,12 +112,30 @@
       .enter()
       .append('g')
       .attr('class', 'slice');
+
     // 绘制饼图的弧路径
     arcs
       .append('path')
       .attr('d', arc)
       .attr('class', 'slice')
-      .style('fill', (d, i) => d3.schemeCategory10[i]);
+      .style('fill', (d, i) => d3.schemeCategory10[i])
+      .on('mouseover', function (event, d) {
+        // 鼠标移入时，放大并高亮
+        d3.select(this)
+          .transition()
+          .duration(200)
+          .attr('d', arcHover) // 放大区域
+          .style('fill', d3.rgb(d3.schemeCategory10[d.index]).brighter(1)); // 高亮颜色
+      })
+      .on('mouseout', function (event, d) {
+        // 鼠标移出时，恢复原状
+        d3.select(this)
+          .transition()
+          .duration(200)
+          .attr('d', arc) // 恢复原大小
+          .style('fill', d3.schemeCategory10[d.index]); // 恢复原颜色
+      });
+
     // 添加文本标签
     arcs
       .append('text')
@@ -127,7 +151,7 @@
     // 添加标题
     svg
       .append('text')
-      .attr('x', width / 2)
+      .attr('x', width / 2 + margin.left / 2)
       .attr('y', margin.top / 2)
       .attr('text-anchor', 'middle')
       .attr('font-size', '18px')
