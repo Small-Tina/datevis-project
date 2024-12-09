@@ -211,7 +211,7 @@
       .attr('text-anchor', 'middle') // 文本居中
       .attr('font-size', '18px') // 设置字体大小
       .attr('font-weight', 'bold') // 设置加粗字体
-      .text('近七年全国人均消费支出'); // 设置标题内容
+      .text('近七年全国人均消费支出变化'); // 设置标题内容
   }
   function createLegend(svg, categories, colorScale) {
     const legendGroup = svg.append('g').attr('class', 'legend-group');

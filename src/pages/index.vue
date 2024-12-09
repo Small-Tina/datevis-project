@@ -20,7 +20,6 @@
   function getData() {
     const dataUrl = ['/assets/城镇.xlsx', '/assets/农村.xlsx', '/assets/全国.xlsx'];
     let dataArray = [];
-
     /**
      *
      * @param {Array} dataUrl
@@ -48,6 +47,7 @@
         nationalData.value = dataArray[2];
       })
       .then(() => {});
+    console.log(dataArray);
   }
 
   onMounted(() => {
