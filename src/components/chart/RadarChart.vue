@@ -54,7 +54,7 @@
     createdChart();
   });
 
-  const margin = { top: 30, left: 80, bottom: 20 };
+  const margin = { top: 30, left: 150, bottom: 20 };
   const width = 565;
   const height = 500;
   const radius = Math.min(width, height) / 2 - 50;

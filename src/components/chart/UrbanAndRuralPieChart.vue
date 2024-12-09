@@ -72,7 +72,10 @@
   // 更新图表
   function updateChart(svg, radius, width, height, margin, data) {
     // 创建饼图布局
-    const pie = d3.pie().value((d) => d.data);
+    const pie = d3
+      .pie()
+      .value((d) => d.data)
+      .padAngle(0.01);
 
     // 设置圆环的内半径
     const arc = d3
@@ -110,7 +113,11 @@
       .attr('text-anchor', 'middle') // 文本居中对齐
       .attr('fill', 'white')
       .attr('font-size', '18px')
-      .text((d) => d.data.name)
+      .text((d) => {
+        const total = data[0].data + data[1].data;
+
+        return `${d.data.name}: ${((d.data.data / total) * 100).toFixed(2)}%`;
+      })
       .transition() // 文本淡入动画
       .duration(3000)
       .attr('transform', (d) => `translate(${arc.centroid(d)})`);

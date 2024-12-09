@@ -61,7 +61,7 @@
 <template>
   <div class="h-screen w-screen">
     <div class="flex items-center justify-center">
-      <span class="text-4xl">近年我国国民收支情况</span>
+      <span class="text-4xl">近7年我国国民收支情况</span>
     </div>
     <div class="flex flex-col">
       <div class="basis-1/2 flex flex-row mb-5">

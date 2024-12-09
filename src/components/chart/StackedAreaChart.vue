@@ -119,7 +119,7 @@
         const originalColor = d3.select(this).attr('fill');
 
         // 高亮当前区域
-        d3.select(this).attr('fill', d3.rgb(originalColor).darker(1));
+        d3.select(this).transition().duration(200).attr('fill', d3.rgb(originalColor).darker(1));
 
         // 更新并显示 tooltip
         tooltip.transition().duration(200).style('opacity', 1);
@@ -131,7 +131,7 @@
         // 在 mouseout 中恢复颜色
         d3.select(this).on('mouseout', function () {
           // 恢复颜色
-          d3.select(this).attr('fill', originalColor);
+          d3.select(this).transition().duration(200).attr('fill', originalColor);
 
           // 隐藏 tooltip
           tooltip.transition().duration(200).style('opacity', 0);
