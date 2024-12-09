@@ -11,7 +11,7 @@
 </template>
 
 <script setup>
-  import { watch, onMounted } from 'vue';
+  import { watch, onMounted, ref } from 'vue';
   import * as d3 from 'd3';
   /**
    * 配置组件
@@ -19,6 +19,8 @@
   defineOptions({
     name: 'IAEbarChart',
   });
+
+  const emit = defineEmits(['barClick']);
   /**
    * 接收来自父组件的数据
    */
@@ -58,6 +60,7 @@
   const height = 430;
   // 定义柱状图宽度
   const barWeight = 900;
+  const selectYear = ref();
   /**
    * 创建图表
    * @returns
@@ -128,6 +131,7 @@
         categories
           .map((category) => ({
             category,
+            year: d.year,
             value: d[category],
             selected: selectedCategories[category],
           }))
@@ -152,6 +156,9 @@
           .style('left', `${event.pageX + 10}px`)
           .style('top', `${event.pageY - 10}px`)
           .text(`${d.category}: ${d.value}`);
+      })
+      .on('click', function (event, d) {
+        emit('barClick', d.year);
       })
       .on('mouseout', function () {
         // 恢复柱子原始颜色

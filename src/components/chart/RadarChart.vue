@@ -25,7 +25,7 @@
       required: true,
     },
     selectYear: {
-      type: String,
+      type: Number,
       required: true,
     },
   });
@@ -40,8 +40,8 @@
    * @returns
    */
   watch(
-    () => [props.nationalData, props.cityData, props.villageData, props.selectYear],
-    () => {
+    () => [props.selectYear],
+    (newYear) => {
       createdChart();
     },
     { deep: true }
@@ -71,13 +71,12 @@
     const allData = [nationalData, cityData, villageData];
     const maxValue = Math.max(...allData.map((d) => Math.max(...Object.values(d))));
 
+    chart.select('svg').remove();
     // 创建或更新 SVG
-    const svg = chart.select('svg').empty()
-      ? chart
-          .append('svg')
-          .attr('width', width + margin.left)
-          .attr('height', height)
-      : chart.select('svg');
+    const svg = chart
+      .append('svg')
+      .attr('width', width + margin.left)
+      .attr('height', height);
 
     updateChart(svg, dimensions, angleSlice, nationalData, cityData, villageData, maxValue);
     creatTitle(svg);
@@ -91,7 +90,6 @@
       财产净收入: item.财产净收入,
       转移净收入: item.转移净收入,
     }));
-    console.log(processData);
 
     // 获取选择年份的数据
     const processData_now = processData.find((item) => item.年 == props.selectYear);

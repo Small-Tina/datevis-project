@@ -10,7 +10,7 @@
   let nationalData = ref([]);
   let cityData = ref([]);
   let villageData = ref([]);
-  let selectYear = ref('2023');
+  let selectYear = ref(2023);
 
   /**
    *
@@ -53,6 +53,9 @@
   onMounted(() => {
     getData();
   });
+  function barClick(year) {
+    selectYear.value = year;
+  }
 </script>
 
 <template>
@@ -66,6 +69,7 @@
           <IAEbarChart
             v-if="nationalData.length > 0"
             :nationalData="nationalData"
+            @barClick="barClick"
           />
         </div>
         <div class="basis-1/2">

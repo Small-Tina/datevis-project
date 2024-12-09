@@ -116,6 +116,18 @@
       .attr('font-size', '12px')
       .text('金额/元');
 
+    // 在创建图表时添加 tooltip 容器
+    const tooltip = d3
+      .select('body')
+      .append('div')
+      .attr('class', 'tooltip')
+      .style('position', 'absolute')
+      .style('background', 'rgba(0, 0, 0, 0.7)')
+      .style('color', '#fff')
+      .style('padding', '5px 10px')
+      .style('border-radius', '4px')
+      .style('pointer-events', 'none') // 禁止鼠标事件
+      .style('opacity', 0); // 初始隐藏
     const categories = ['food', 'clothes', 'reside', 'goods', 'transportation', 'educational', 'healthcare', 'other'];
     // 定义颜色比例尺，根据类别返回不同的颜色
     const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
@@ -139,6 +151,7 @@
           d3.selectAll('.line').style('opacity', 0.2); // 变暗其他折线
           d3.select(this).style('opacity', 1).style('stroke-width', 3); // 高亮当前折线
         })
+
         .on('mouseout', function () {
           // 恢复所有折线
           d3.selectAll('.line').style('opacity', 1).style('stroke-width', 2);
@@ -154,11 +167,24 @@
         .attr('cy', (d) => yScale(d[category]))
         .attr('r', 4)
         .style('fill', colorScale(category))
-        .on('mouseover', function () {
+        .on('mouseover', function (event, d) {
+          // 显示 tooltip
+          tooltip.style('opacity', 1).html(`
+        <strong>${getCategoryName(category)}:</strong> ${d[category]} 元<br/>
+        <strong>年份:</strong> ${d.year}
+      `); // 设置内容
           // 高亮当前点
-          d3.select(this).transition().duration(200).attr('r', 6); // 放大点
+          d3.select(this).transition().duration(200).attr('r', 10); // 放大点
+        })
+        .on('mousemove', function (event) {
+          // 更新 tooltip 位置
+          tooltip
+            .style('left', `${event.pageX + 10}px`) // 在鼠标右侧显示
+            .style('top', `${event.pageY + 10}px`); // 在鼠标下方显示
         })
         .on('mouseout', function () {
+          // 隐藏 tooltip
+          tooltip.style('opacity', 0);
           // 恢复点大小
           d3.select(this).transition().duration(200).attr('r', 4);
         });

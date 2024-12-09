@@ -21,7 +21,7 @@
       required: true,
     },
     selectYear: {
-      type: String,
+      type: Number,
       required: true,
     },
   });
@@ -36,11 +36,10 @@
    * @returns
    */
   watch(
-    () => [props.cityData, props.villageData],
-    () => {
+    () => [props.selectYear],
+    (newYear) => {
       createdChart();
-    },
-    { deep: true }
+    }
   );
   /**
    * 组件挂载时执行
@@ -72,13 +71,12 @@
     const radius = Math.min(width, height) / 2 - 50;
     // 获取div的宽高
     const uarDiv = d3.select('#UARdiv');
+    uarDiv.select('svg').remove();
     // 检查并获取现有的 SVG 元素，如果没有则创建新的
-    const svg = uarDiv.select('svg').empty()
-      ? uarDiv
-          .append('svg')
-          .attr('width', width + margin.left)
-          .attr('height', height)
-      : uarDiv.select('svg');
+    const svg = uarDiv
+      .append('svg')
+      .attr('width', width + margin.left)
+      .attr('height', height);
     creatTitle(svg, width, margin);
     updateChart(svg, radius, width, height, margin, data);
   }
@@ -156,6 +154,6 @@
       .attr('text-anchor', 'middle')
       .attr('font-size', '18px')
       .attr('font-weight', 'bold')
-      .text('城乡收入对比');
+      .text(`${props.selectYear}城乡收入对比`);
   }
 </script>
