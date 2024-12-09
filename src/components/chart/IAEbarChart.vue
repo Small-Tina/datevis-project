@@ -46,8 +46,8 @@
 
   // 在组件的作用域内定义 selectedCategories 状态
   let selectedCategories = {
-    preDI: true,
-    prePCE: true,
+    人均可支配收入: true,
+    人均消费支出: true,
   };
   // 定义margin，确定与上下边的距离
   const margin = { top: 30, left: 60, bottom: 20 };
@@ -64,27 +64,27 @@
     const preIAE = props.nationalData.map((item) => {
       return {
         year: item.年,
-        preDI: item.人均可支配收入,
-        prePCE: item.人均消费支出,
+        人均可支配收入: item.人均可支配收入,
+        人均消费支出: item.人均消费支出,
       };
     });
-    const categories = ['prePCE', 'preDI'];
+    const categories = ['人均消费支出', '人均可支配收入'];
     const colorMap = [
       {
         name: '人均可支配收入',
-        value: 'preDI',
+        value: '人均可支配收入',
         color: '#009db2',
       },
       {
         name: '人均消费支出',
-        value: 'prePCE',
+        value: '人均消费支出',
         color: '#f9e264',
       },
     ];
     // 获取年份
     const year = d3.map(preIAE, (item) => item.year);
     // 获取收入最大值
-    const maxValue = d3.max(preIAE, (d) => +d.preDI);
+    const maxValue = d3.max(preIAE, (d) => +d.人均可支配收入);
     // 获取div的宽高
     const iaeDiv = d3.select('#iaeDiv');
     // 检查并获取现有的 SVG 元素，如果没有则创建新的
@@ -158,7 +158,7 @@
           .duration(200)
           .attr('fill', d3.color(d3.select(this).attr('fill')).darker(1)); // 提高亮度
         // 显示提示信息
-        tooltip.style('opacity', 1).text(`${d.category}: ${d.value}`);
+        tooltip.style('opacity', 1).text(`${d.year}年${d.category}: ${d.value}`);
       })
       .on('mousemove', function (event) {
         // 更新 tooltip 位置

@@ -57,13 +57,11 @@
       .attr('height', height + margin.top + margin.bottom);
 
     const g = svg.append('g').attr('transform', `translate(${margin.left}, ${margin.top})`);
-
-    // 提取堆叠的字段
-    const keys = Object.keys(props.nationalData[0]).filter((k) => k !== '年');
-
     const data = props.nationalData.map((item) => {
-      return { 年: +item.年, 食品烟酒: item.食品烟酒, 居住: item.居住, 医疗保健: item.医疗保健, 教育文化娱乐: item.教育文化娱乐, 交通通信: item.交通通信, 其他用品及服务: item.其他用品及服务, 衣着: item.衣着 };
+      return { 年: +item.年, 食品烟酒: item.食品烟酒, 居住环境: item.居住, 医疗保健: item.医疗保健, 教育文化: item.教育文化娱乐, 交通通信: item.交通通信, 衣着用品: item.衣着, 其他: item.其他用品及服务 };
     });
+    // 提取堆叠的字段
+    const keys = Object.keys(data[0]).filter((k) => k !== '年');
 
     // 堆叠数据
     const stack = d3.stack().keys(keys).offset(d3.stackOffsetExpand);
@@ -109,7 +107,8 @@
       .style('pointer-events', 'none') // 禁止鼠标事件
       .style('opacity', 0); // 初始隐藏
 
-    g.selectAll('path')
+    const paths = g
+      .selectAll('path')
       .data(stackedData)
       .join('path')
       .attr('fill', (d) => color(d.key))
@@ -125,7 +124,7 @@
         // 更新并显示 tooltip
         tooltip.transition().duration(200).style('opacity', 1);
         tooltip
-          .html(`${d.key}<br>From: ${d[0][0]}<br>To: ${d[0][1]}`)
+          .html(`${d.key}`)
           .style('left', `${event.pageX + 5}px`)
           .style('top', `${event.pageY - 28}px`);
 
@@ -137,6 +136,12 @@
           // 隐藏 tooltip
           tooltip.transition().duration(200).style('opacity', 0);
         });
+      })
+      .on('mousemove', function (event) {
+        // 更新 tooltip 位置
+        tooltip
+          .style('left', `${event.pageX + 10}px`) // 在鼠标右侧显示
+          .style('top', `${event.pageY + 10}px`); // 在鼠标下方显示
       });
 
     // 添加 X 轴
@@ -152,6 +157,26 @@
     // 添加 Y 轴
     g.append('g').call(d3.axisLeft(y));
     creatTitle(svg);
+    // 创建图例并放置在底部
+    const legend = svg.append('g').attr('transform', `translate(${margin.left}, ${height + margin.top + 20})`); // 将图例放置在底部，注意这里的 `height + margin.top + 20`
+
+    // 为每个堆叠区域添加图例项
+    legend
+      .selectAll('.legend-item')
+      .data(keys)
+      .enter()
+      .append('g')
+      .attr('class', 'legend-item')
+      .attr('transform', (d, i) => `translate(${i * 90}, 0)`) // 水平排列图例项
+      .each(function (d) {
+        const legendItem = d3.select(this);
+
+        // 添加颜色块
+        legendItem.append('rect').attr('width', 18).attr('height', 18).style('fill', color(d));
+
+        // 添加文字
+        legendItem.append('text').attr('x', 25).attr('y', 9).attr('dy', '.35em').style('text-anchor', 'start').text(d);
+      });
   }
   function creatTitle(svg) {
     // 添加标题
