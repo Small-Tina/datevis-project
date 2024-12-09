@@ -131,6 +131,7 @@
     const categories = ['food', 'clothes', 'reside', 'goods', 'transportation', 'educational', 'healthcare', 'other'];
     // 定义颜色比例尺，根据类别返回不同的颜色
     const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+
     categories.forEach((category) => {
       // 定义线条生成器
       const lineGenerator = d3
@@ -139,23 +140,24 @@
         .y((d) => yScale(d[category]));
 
       // 创建折线路径
-      g.append('path')
+      const path = g
+        .append('path')
         .datum(data) // 将数据绑定到路径
         .attr('class', `line ${category}`) // 为每个类别的线添加不同的样式类
         .attr('fill', 'none')
         .attr('stroke', colorScale(category)) // 使用颜色比例尺来给不同类别分配颜色
         .attr('stroke-width', 2)
         .attr('d', lineGenerator)
-        .on('mouseover', function () {
-          // 高亮当前折线
-          d3.selectAll('.line').style('opacity', 0.2); // 变暗其他折线
-          d3.select(this).style('opacity', 1).style('stroke-width', 3); // 高亮当前折线
+        .attr('stroke-dasharray', function () {
+          return this.getTotalLength(); // 设置为线的总长度
         })
-
-        .on('mouseout', function () {
-          // 恢复所有折线
-          d3.selectAll('.line').style('opacity', 1).style('stroke-width', 2);
-        }); // 使用线条生成器定义路径
+        .attr('stroke-dashoffset', function () {
+          return this.getTotalLength(); // 初始时线条长度为0，完全不可见
+        })
+        .transition() // 启用动画
+        .duration(1500) // 动画持续时间
+        .attr('stroke-dashoffset', 0) // 逐渐绘制线条
+        .attr('stroke-width', 3); // 动画结束时，宽度变大
 
       // 添加点以突出显示数据点
       g.selectAll(`.${category}-dot`)
@@ -165,14 +167,21 @@
         .attr('class', `${category}-dot`)
         .attr('cx', (d) => xScale(d.year) + xScale.bandwidth() / 2)
         .attr('cy', (d) => yScale(d[category]))
-        .attr('r', 4)
+        .attr('r', 0) // 初始化时点大小为0
         .style('fill', colorScale(category))
+        .transition() // 添加点动画
+        .duration(1500) // 动画持续时间
+        .attr('r', 4) // 动画结束时点大小恢复
+        .ease(d3.easeElastic); // 弹性动画效果
+
+      // 事件绑定
+      g.selectAll(`.${category}-dot`)
         .on('mouseover', function (event, d) {
           // 显示 tooltip
           tooltip.style('opacity', 1).html(`
-        <strong>${getCategoryName(category)}:</strong> ${d[category]} 元<br/>
-        <strong>年份:</strong> ${d.year}
-      `); // 设置内容
+          <strong>${getCategoryName(category)}:</strong> ${d[category]} 元<br/>
+          <strong>年份:</strong> ${d.year}
+        `); // 设置内容
           // 高亮当前点
           d3.select(this).transition().duration(200).attr('r', 10); // 放大点
         })
@@ -189,6 +198,7 @@
           d3.select(this).transition().duration(200).attr('r', 4);
         });
     });
+
     // 调用添加图例的方法
     createLegend(svg, categories, colorScale);
   }

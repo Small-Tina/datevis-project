@@ -3,11 +3,6 @@
     id="iaeDiv"
     class="h-full mt-2"
   ></div>
-  <div
-    id="tooltip"
-    class="tooltip"
-    style="position: absolute; display: none"
-  ></div>
 </template>
 
 <script setup>
@@ -111,6 +106,18 @@
     const xAxis = d3.axisBottom(xScale).tickSize(0).tickPadding(10);
     const yAxis = d3.axisLeft(yScale).tickSize(0);
 
+    // 在创建图表时添加 tooltip 容器
+    const tooltip = d3
+      .select('body')
+      .append('div')
+      .attr('class', 'tooltip')
+      .style('position', 'absolute')
+      .style('background', 'rgba(0, 0, 0, 0.7)')
+      .style('color', '#fff')
+      .style('padding', '5px 10px')
+      .style('border-radius', '4px')
+      .style('pointer-events', 'none') // 禁止鼠标事件
+      .style('opacity', 0); // 初始隐藏
     g.append('g')
       .attr('class', 'x-axis')
       .attr('transform', `translate(0, ${height - margin.top - margin.bottom})`)
@@ -149,13 +156,15 @@
         d3.select(this)
           .transition()
           .duration(200)
-          .attr('fill', d3.color(d3.select(this).attr('fill')).brighter(1)); // 提高亮度
+          .attr('fill', d3.color(d3.select(this).attr('fill')).darker(1)); // 提高亮度
         // 显示提示信息
-        d3.select('#tooltip')
-          .style('display', 'block')
-          .style('left', `${event.pageX + 10}px`)
-          .style('top', `${event.pageY - 10}px`)
-          .text(`${d.category}: ${d.value}`);
+        tooltip.style('opacity', 1).text(`${d.category}: ${d.value}`);
+      })
+      .on('mousemove', function (event) {
+        // 更新 tooltip 位置
+        tooltip
+          .style('left', `${event.pageX + 10}px`) // 在鼠标右侧显示
+          .style('top', `${event.pageY + 10}px`); // 在鼠标下方显示
       })
       .on('click', function (event, d) {
         emit('barClick', d.year);
@@ -167,7 +176,8 @@
           .duration(200)
           .attr('fill', (d) => colorMap.find((item) => item.value === d.category)?.color);
         // 隐藏提示信息
-        d3.select('#tooltip').style('display', 'none');
+        // 隐藏 tooltip
+        tooltip.style('opacity', 0);
       });
   }
   /**

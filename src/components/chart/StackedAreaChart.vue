@@ -57,12 +57,17 @@
       .attr('height', height + margin.top + margin.bottom);
 
     const g = svg.append('g').attr('transform', `translate(${margin.left}, ${margin.top})`);
+
     // 提取堆叠的字段
     const keys = Object.keys(props.nationalData[0]).filter((k) => k !== '年');
 
+    const data = props.nationalData.map((item) => {
+      return { 年: +item.年, 食品烟酒: item.食品烟酒, 居住: item.居住, 医疗保健: item.医疗保健, 教育文化娱乐: item.教育文化娱乐, 交通通信: item.交通通信, 其他用品及服务: item.其他用品及服务, 衣着: item.衣着 };
+    });
+
     // 堆叠数据
     const stack = d3.stack().keys(keys).offset(d3.stackOffsetExpand);
-    const stackedData = stack(props.nationalData);
+    const stackedData = stack(data);
 
     // 确保 '年' 是数值型
     props.nationalData.forEach((d) => {
@@ -91,12 +96,48 @@
       .y0((d) => y(d[0]))
       .y1((d) => y(d[1]));
 
-    // 绘制堆叠面积图
+    // 创建 tooltip
+    const tooltip = d3
+      .select('body')
+      .append('div')
+      .attr('class', 'tooltip')
+      .style('position', 'absolute')
+      .style('background', 'rgba(0, 0, 0, 0.7)')
+      .style('color', '#fff')
+      .style('padding', '5px 10px')
+      .style('border-radius', '4px')
+      .style('pointer-events', 'none') // 禁止鼠标事件
+      .style('opacity', 0); // 初始隐藏
+
     g.selectAll('path')
       .data(stackedData)
       .join('path')
       .attr('fill', (d) => color(d.key))
-      .attr('d', area);
+      .attr('d', area)
+      // 添加鼠标事件处理
+      .on('mouseover', function (event, d) {
+        // 保存原始颜色
+        const originalColor = d3.select(this).attr('fill');
+
+        // 高亮当前区域
+        d3.select(this).attr('fill', d3.rgb(originalColor).darker(1));
+
+        // 更新并显示 tooltip
+        tooltip.transition().duration(200).style('opacity', 1);
+        tooltip
+          .html(`${d.key}<br>From: ${d[0][0]}<br>To: ${d[0][1]}`)
+          .style('left', `${event.pageX + 5}px`)
+          .style('top', `${event.pageY - 28}px`);
+
+        // 在 mouseout 中恢复颜色
+        d3.select(this).on('mouseout', function () {
+          // 恢复颜色
+          d3.select(this).attr('fill', originalColor);
+
+          // 隐藏 tooltip
+          tooltip.transition().duration(200).style('opacity', 0);
+        });
+      });
 
     // 添加 X 轴
     g.append('g')

@@ -98,6 +98,18 @@
   function updateChart(svg, dimensions, angleSlice, nationalData, cityData, villageData, maxValue) {
     // 创建 g 元素并移动到合适的位置
     const g = svg.append('g').attr('transform', `translate(${width / 2 + margin.left / 2}, ${height / 2 + margin.top / 2})`);
+    // 在创建图表时添加 tooltip 容器
+    const tooltip = d3
+      .select('body')
+      .append('div')
+      .attr('class', 'tooltip')
+      .style('position', 'absolute')
+      .style('background', 'rgba(0, 0, 0, 0.7)')
+      .style('color', '#fff')
+      .style('padding', '5px 10px')
+      .style('border-radius', '4px')
+      .style('pointer-events', 'none') // 禁止鼠标事件
+      .style('opacity', 0); // 初始隐藏
     // 绘制网格线（圆圈）
     g.selectAll('.gridCircle')
       .data(d3.range(1, 6)) // 可调整圈数
@@ -179,11 +191,11 @@
     const legend = svg.append('g').attr('transform', `translate(${margin.left}, ${margin.top})`);
 
     legendData.forEach((d, i) => {
-      const legendItem = legend.append('g').attr('transform', `translate(0, ${i * 20})`);
+      const legendItem = legend.append('g').attr('transform', `translate(0, ${i * 25})`);
 
-      legendItem.append('rect').attr('width', 15).attr('height', 15).style('fill', d.color);
+      legendItem.append('rect').attr('width', 20).attr('height', 20).style('fill', d.color);
 
-      legendItem.append('text').attr('x', 20).attr('y', 12).attr('text-anchor', 'start').text(d.label).style('font-size', '12px');
+      legendItem.append('text').attr('x', 20).attr('y', 12).attr('text-anchor', 'start').text(d.label).style('font-size', '16px');
     });
   }
 </script>
