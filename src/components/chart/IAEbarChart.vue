@@ -147,10 +147,23 @@
       .join('rect')
       .attr('class', (d) => `bar ${d.category}`) // 给每个柱子添加类别类名
       .attr('x', (d) => subXScale(d.category))
-      .attr('y', (d) => yScale(d.value))
+      .attr('y', yScale(0)) // 初始位置从 yScale(0) 开始（图表底部）
       .attr('width', subXScale.bandwidth())
-      .attr('height', (d) => yScale(0) - yScale(d.value))
+      .attr('height', 0) // 初始高度为 0
       .attr('fill', (d) => colorMap.find((item) => item.value === d.category)?.color)
+      .transition() // 第一阶段动画
+      .duration(800) // 动画时长 800ms
+      .ease(d3.easeCubicOut) // 平滑效果
+      .attr('y', (d) => yScale(d.value) + (yScale(0) - yScale(d.value)) / 2) // 到中间高度
+      .attr('height', (d) => (yScale(0) - yScale(d.value)) / 2) // 高度增长到一半
+      .transition() // 第二阶段动画
+      .duration(800) // 动画时长 800ms
+      .ease(d3.easeCubicOut) // 第二阶段带回弹效果
+      .attr('y', (d) => yScale(d.value)) // 最终位置
+      .attr('height', (d) => yScale(0) - yScale(d.value)); // 最终高度
+    // 添加交互
+    barGroups
+      .selectAll('rect')
       .on('mouseover', function (event, d) {
         // 高亮当前柱子
         d3.select(this)
@@ -175,8 +188,6 @@
           .transition()
           .duration(200)
           .attr('fill', (d) => colorMap.find((item) => item.value === d.category)?.color);
-        // 隐藏提示信息
-        // 隐藏 tooltip
         tooltip.style('opacity', 0);
       });
   }
@@ -205,12 +216,12 @@
         })
         .on('mouseover', function () {
           // 高亮当前类别的柱状图
-          svg.selectAll('.bar').style('opacity', 0.3); // 使所有柱子变透明
-          svg.selectAll(`.bar.${category}`).style('opacity', 1); // 高亮当前类别
+          svg.selectAll('.bar').transition().duration(200).style('opacity', 0.3); // 使所有柱子变透明
+          svg.selectAll(`.bar.${category}`).transition().duration(200).style('opacity', 1); // 高亮当前类别
         })
         .on('mouseout', function () {
           // 恢复所有柱状图的透明度
-          svg.selectAll('.bar').style('opacity', 1);
+          svg.selectAll('.bar').transition().duration(200).style('opacity', 1);
         });
 
       // 放大图例矩形

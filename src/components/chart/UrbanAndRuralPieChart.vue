@@ -43,6 +43,10 @@
     createdChart();
   });
 
+  const margin = { top: 30, left: 60, bottom: 20 };
+  const width = 565;
+  const height = 500;
+  const radius = Math.min(width, height) / 2 - 50;
   // 创建图表
   function createdChart() {
     const cityData = props.cityData.find((item) => item.年 == props.selectYear)?.人均可支配收入;
@@ -51,10 +55,6 @@
       { name: '城市', data: cityData, color: '#3498db' }, // 蓝色
       { name: '农村', data: villageData, color: '#e74c3c' }, // 红色
     ];
-    const margin = { top: 30, left: 60, bottom: 20 };
-    const width = 565;
-    const height = 500;
-    const radius = Math.min(width, height) / 2 - 50;
 
     // 获取 div 的宽高
     const uarDiv = d3.select('#UARdiv');
@@ -66,11 +66,11 @@
       .attr('height', height);
 
     creatTitle(svg, width, margin); // 创建标题
-    updateChart(svg, radius, width, height, margin, data); // 更新图表
+    updateChart(svg, data); // 更新图表
   }
 
   // 更新图表
-  function updateChart(svg, radius, width, height, margin, data) {
+  function updateChart(svg, data) {
     // 创建饼图布局
     const pie = d3
       .pie()
@@ -81,14 +81,28 @@
     const arc = d3
       .arc()
       .innerRadius(radius * 0.5)
-      .outerRadius(radius); // 设置内半径来创建圆环
-
+      .outerRadius(radius);
+    const arcHover = d3
+      .arc()
+      .innerRadius(radius * 0.5)
+      .outerRadius(radius * 1.1);
+    // 在创建图表时添加 tooltip 容器
+    const tooltip = d3
+      .select('body')
+      .append('div')
+      .attr('class', 'tooltip')
+      .style('position', 'absolute')
+      .style('background', 'rgba(0, 0, 0, 0.7)')
+      .style('color', '#fff')
+      .style('padding', '5px 10px')
+      .style('border-radius', '4px')
+      .style('pointer-events', 'none') // 禁止鼠标事件
+      .style('opacity', 0); // 初始隐藏
     // 创建一个 g 元素，用于容纳所有的图形元素
     const g = svg.append('g').attr('transform', `translate(${width / 2 + margin.left / 2}, ${height / 2 + margin.top / 2})`);
 
     // 绘制饼图
-    const arcs = g
-      .selectAll('.slice')
+    g.selectAll('.slice')
       .data(pie(data))
       .enter()
       .append('path')
@@ -96,7 +110,7 @@
       .attr('class', 'slice')
       .style('fill', (d, i) => data[i].color) // 设置初始颜色
       .transition()
-      .duration(3000)
+      .duration(2000)
       .attrTween('d', function (d) {
         const start = { startAngle: 0, endAngle: 0 };
         const interpolate = d3.interpolate(start, d);
@@ -105,6 +119,33 @@
         };
       });
 
+    g.selectAll('.slice')
+      .on('mouseover', function (event, d) {
+        const total = data[0].data + data[1].data;
+        d3.select(this)
+          .transition() // 平滑过渡
+          .duration(300) // 动画时间
+          .attr('d', arcHover); // 切换到放大的路径
+        console.log(event);
+
+        tooltip.style('opacity', 1).html(`
+        <strong>${d.data.name}收入:</strong> ${d.value}<br/>
+        <strong>占比:</strong> ${((d.data.data / total) * 100).toFixed(2)}%
+        `);
+      })
+      .on('mousemove', function (event) {
+        // 更新 tooltip 位置
+        tooltip
+          .style('left', `${event.pageX + 10}px`) // 在鼠标右侧显示
+          .style('top', `${event.pageY + 10}px`); // 在鼠标下方显示
+      })
+      .on('mouseout', function () {
+        d3.select(this)
+          .transition() // 平滑过渡
+          .duration(300)
+          .attr('d', arc); // 恢复到原始路径
+        tooltip.style('opacity', 0);
+      });
     // 添加文本标签并加上动画
     g.selectAll('text')
       .data(pie(data))
@@ -115,7 +156,6 @@
       .attr('font-size', '18px')
       .text((d) => {
         const total = data[0].data + data[1].data;
-
         return `${d.data.name}: ${((d.data.data / total) * 100).toFixed(2)}%`;
       })
       .transition() // 文本淡入动画
@@ -124,7 +164,7 @@
   }
 
   // 创建标题
-  function creatTitle(svg, width, margin) {
+  function creatTitle(svg) {
     svg
       .append('text')
       .attr('x', width / 2 + margin.left / 2)

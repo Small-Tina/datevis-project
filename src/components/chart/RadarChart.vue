@@ -57,7 +57,7 @@
   const margin = { top: 30, left: 150, bottom: 20 };
   const width = 565;
   const height = 500;
-  const radius = Math.min(width, height) / 2 - 50;
+  const radius = Math.min(width, height) / 2 - 70;
   function createdChart() {
     const chart = d3.select('#radarChart');
     const dimensions = ['工资性收入', '经营净收入', '财产净收入', '转移净收入'];
@@ -97,7 +97,7 @@
   }
   function updateChart(svg, dimensions, angleSlice, nationalData, cityData, villageData, maxValue) {
     // 创建 g 元素并移动到合适的位置
-    const g = svg.append('g').attr('transform', `translate(${width / 2 + margin.left / 2}, ${height / 2 + margin.top / 2})`);
+    const g = svg.append('g').attr('transform', `translate(${width / 2 + margin.left / 2}, ${height / 2})`);
     // 在创建图表时添加 tooltip 容器
     const tooltip = d3
       .select('body')
@@ -110,13 +110,22 @@
       .style('border-radius', '4px')
       .style('pointer-events', 'none') // 禁止鼠标事件
       .style('opacity', 0); // 初始隐藏
-    // 绘制网格线（圆圈）
-    g.selectAll('.gridCircle')
-      .data(d3.range(1, 6)) // 可调整圈数
+    // 绘制网格线（多边形）
+    g.selectAll('.gridPolygon')
+      .data(d3.range(1, 4)) // 3 个层级
       .enter()
-      .append('circle')
-      .attr('class', 'gridCircle')
-      .attr('r', (d) => (radius / 5) * d)
+      .append('polygon')
+      .attr('class', 'gridPolygon')
+      .attr('points', (d) => {
+        const level = d / 3; // 当前层级相对于最大半径的比例
+        return dimensions
+          .map((dim, i) => {
+            const x = radius * level * Math.cos(angleSlice * i - Math.PI / 2);
+            const y = radius * level * Math.sin(angleSlice * i - Math.PI / 2);
+            return [x, y].join(','); // 返回顶点的坐标
+          })
+          .join(' '); // 将所有顶点连接成路径
+      })
       .style('fill', '#ccc')
       .style('stroke', '#ccc')
       .style('fill-opacity', 0.1);
@@ -137,10 +146,10 @@
     axis
       .append('text')
       .attr('transform', (d, i) => `translate(${radius * 1.1 * Math.cos(angleSlice * i - Math.PI / 2)}, ${radius * 1.1 * Math.sin(angleSlice * i - Math.PI / 2)})`)
-      .attr('text-anchor', (d, i) => (i % 2 === 0 ? 'start' : 'end'))
+      .attr('text-anchor', 'middle')
       .attr('dy', '.35em')
       .text((d) => d);
-    function drawDataSet(g, data, color, label) {
+    function drawDataSet(g, data, color) {
       // 计算数据的坐标
       const dataValues = dimensions.map((d, j) => {
         const x = radius * (data[d] / maxValue) * Math.cos(angleSlice * j - Math.PI / 2);
@@ -156,13 +165,12 @@
         .style('fill', color)
         .style('stroke', color)
         .style('stroke-width', 2)
-        .style('fill-opacity', 0.5);
+        .style('fill-opacity', 0.2);
 
       // 绘制每个数据点及数据值标签
       dimensions.forEach((d, j) => {
         const x = radius * (data[d] / maxValue) * Math.cos(angleSlice * j - Math.PI / 2);
         const y = radius * (data[d] / maxValue) * Math.sin(angleSlice * j - Math.PI / 2);
-
         g.append('circle').attr('class', 'radar-chart-point').attr('cx', x).attr('cy', y).attr('r', 4).style('fill', color).style('stroke', '#fff').style('stroke-width', 2);
       });
     }
@@ -188,14 +196,21 @@
       { label: '农村', color: '#2ecc71' },
     ];
 
-    const legend = svg.append('g').attr('transform', `translate(${margin.left}, ${margin.top})`);
+    // 计算图例开始位置，这里将它放到图表底部
+    const legend = svg.append('g').attr('transform', `translate(${width / 2 - 30}, ${height - 20})`); // 调整位置
 
     legendData.forEach((d, i) => {
-      const legendItem = legend.append('g').attr('transform', `translate(0, ${i * 25})`);
+      const legendItem = legend.append('g').attr('transform', `translate(${i * 90}, 0)`); // 水平排列
 
       legendItem.append('rect').attr('width', 20).attr('height', 20).style('fill', d.color);
 
-      legendItem.append('text').attr('x', 20).attr('y', 12).attr('text-anchor', 'start').text(d.label).style('font-size', '16px');
+      legendItem
+        .append('text')
+        .attr('x', 25)
+        .attr('y', 15) // 调整文字垂直居中
+        .attr('text-anchor', 'start')
+        .text(d.label)
+        .style('font-size', '16px');
     });
   }
 </script>

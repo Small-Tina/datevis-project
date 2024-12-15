@@ -107,8 +107,7 @@
       .style('pointer-events', 'none') // 禁止鼠标事件
       .style('opacity', 0); // 初始隐藏
 
-    const paths = g
-      .selectAll('path')
+    g.selectAll('path')
       .data(stackedData)
       .join('path')
       .attr('fill', (d) => color(d.key))
@@ -158,7 +157,7 @@
     g.append('g').call(d3.axisLeft(y));
     creatTitle(svg);
     // 创建图例并放置在底部
-    const legend = svg.append('g').attr('transform', `translate(${margin.left}, ${height + margin.top + 20})`); // 将图例放置在底部，注意这里的 `height + margin.top + 20`
+    const legend = svg.append('g').attr('transform', `translate(${margin.left}, ${height + margin.top + 20})`);
 
     // 为每个堆叠区域添加图例项
     legend

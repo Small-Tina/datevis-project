@@ -140,8 +140,7 @@
         .y((d) => yScale(d[category]));
 
       // 创建折线路径
-      const path = g
-        .append('path')
+      g.append('path')
         .datum(data) // 将数据绑定到路径
         .attr('class', `line ${category}`) // 为每个类别的线添加不同的样式类
         .attr('fill', 'none')
@@ -158,6 +157,18 @@
         .duration(1500) // 动画持续时间
         .attr('stroke-dashoffset', 0) // 逐渐绘制线条
         .attr('stroke-width', 3); // 动画结束时，宽度变大
+      // 用于记录当前高亮的类别
+      let activeCategory = null;
+      g.selectAll(`.line.${category}`)
+        .on('mouseover', function () {
+          if (activeCategory !== null) return; // 如果有激活的类别，不响应悬停
+          d3.selectAll('.line').style('opacity', 0.2);
+          d3.selectAll(`.line.${category}`).style('opacity', 1).style('stroke-width', 3); // 高亮对应折线p
+        })
+        .on('mouseout', function () {
+          if (activeCategory !== null) return; // 如果有激活的类别，不恢复样式
+          d3.selectAll('.line').style('opacity', 1).style('stroke-width', 2); // 恢复所有折线
+        });
 
       // 添加点以突出显示数据点
       g.selectAll(`.${category}-dot`)
@@ -220,9 +231,7 @@
     const legendX = margin.left + 10;
     const legendY = margin.top;
 
-    // 用于记录当前高亮的类别
     let activeCategory = null;
-
     categories.forEach((category, index) => {
       // 每一项图例的位置
       const legendItem = legendGroup
@@ -234,12 +243,12 @@
         // 添加鼠标悬停事件
         .on('mouseover', function () {
           if (activeCategory !== null) return; // 如果有激活的类别，不响应悬停
-          d3.selectAll('.line').style('opacity', 0.2);
-          d3.selectAll(`.line.${category}`).style('opacity', 1).style('stroke-width', 3); // 高亮对应折线
+          d3.selectAll('.line').transition().duration(200).style('opacity', 0.2);
+          d3.selectAll(`.line.${category}`).transition().duration(200).style('opacity', 1).style('stroke-width', 3); // 高亮对应折线p
         })
         .on('mouseout', function () {
           if (activeCategory !== null) return; // 如果有激活的类别，不恢复样式
-          d3.selectAll('.line').style('opacity', 1).style('stroke-width', 2); // 恢复所有折线
+          d3.selectAll('.line').transition().duration(200).style('opacity', 1).style('stroke-width', 2); // 恢复所有折线
         })
 
         // 添加点击事件
